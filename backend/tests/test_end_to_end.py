@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import os
 from urllib.parse import parse_qs, urlparse
 
 from fastapi.testclient import TestClient
+
+os.environ.setdefault("OFFLINE_MUSIC_JWT_SECRET", "offline-music-test-secret")
+os.environ.setdefault("OFFLINE_MUSIC_PUBLIC_BASE_URL", "http://testserver")
 
 from app.main import app
 
@@ -16,6 +20,7 @@ def challenge(verifier: str) -> str:
 
 def test_device_sync_oauth_and_mcp_tools() -> None:
     with TestClient(app, base_url="http://testserver") as client:
+        chatgpt_redirect = "https://chatgpt.com/connector/oauth/offline-music-test-callback"
         registration = client.post("/api/v1/device/register")
         assert registration.status_code == 200
         headers = {"Authorization": f"Bearer {registration.json()['device_token']}"}
@@ -48,7 +53,7 @@ def test_device_sync_oauth_and_mcp_tools() -> None:
             data={
                 "response_type": "code",
                 "client_id": "https://chatgpt.com/oauth/test-client.json",
-                "redirect_uri": "http://test/callback",
+                "redirect_uri": chatgpt_redirect,
                 "scope": "offline_music.read offline_music.write offline_music.delete_track",
                 "state": "test-state",
                 "code_challenge": challenge(verifier),
@@ -66,7 +71,7 @@ def test_device_sync_oauth_and_mcp_tools() -> None:
             data={
                 "grant_type": "authorization_code",
                 "code": code,
-                "redirect_uri": "http://test/callback",
+                "redirect_uri": chatgpt_redirect,
                 "client_id": "https://chatgpt.com/oauth/test-client.json",
                 "code_verifier": verifier,
                 "resource": "http://testserver/mcp",
@@ -108,3 +113,13 @@ def test_device_sync_oauth_and_mcp_tools() -> None:
         assert "set_track_lyrics" in names
         assert "delete_album" not in names
 
+        response = client.get(
+            "/oauth/authorize",
+            params={
+                "redirect_uri": "https://example.com/callback",
+                "code_challenge": "challenge",
+                "code_challenge_method": "S256",
+            },
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Unsupported redirect_uri"

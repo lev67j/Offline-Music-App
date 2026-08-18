@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 enum OfflineMusicConfiguration {
-    static let serverBaseURL = URL(string: "https://lev11111-gtd-system-backend.hf.space/offline-music")!
+    static let serverBaseURL = URL(string: "https://lev11111-zelo-ai-backend.hf.space")!
     static let mcpURL = serverBaseURL.appendingPathComponent("mcp")
 }
 

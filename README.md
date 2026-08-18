@@ -34,7 +34,7 @@ played until an audio URL is added. Remote covers use the same download flow.
 The production MCP URL is:
 
 ```text
-https://lev11111-gtd-system-backend.hf.space/offline-music/mcp
+https://lev11111-zelo-ai-backend.hf.space/mcp
 ```
 
 ## Project Shape

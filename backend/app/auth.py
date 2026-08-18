@@ -86,6 +86,7 @@ async def create_link_code(session: AsyncSession, device: Device) -> tuple[str, 
 def validate_redirect(uri: str) -> None:
     allowed = (
         "https://chatgpt.com/connector_platform_oauth_redirect",
+        "https://chatgpt.com/connector/oauth/",
         "https://chat.openai.com/aip/plugin-",
         "http://localhost:",
         "http://127.0.0.1:",
