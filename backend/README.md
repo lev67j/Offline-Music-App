@@ -1,3 +1,13 @@
+---
+title: Offline Music MCP
+emoji: "🎵"
+colorFrom: green
+colorTo: gray
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Offline Music MCP backend
 
 The backend stores one encrypted-secret-scoped library per app installation and exposes the same library through REST sync and OAuth-protected MCP.
