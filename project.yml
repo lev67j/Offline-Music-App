@@ -1,0 +1,26 @@
+name: OfflineMusic
+options:
+  minimumXcodeGenVersion: 2.42.0
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    IPHONEOS_DEPLOYMENT_TARGET: 17.0
+targets:
+  OfflineMusic:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: OfflineMusic/Sources
+      - path: OfflineMusic/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.levvlasov.OfflineMusic
+        PRODUCT_NAME: Offline Music
+        INFOPLIST_FILE: OfflineMusic/Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: 1
+        MARKETING_VERSION: 1.0
+        CURRENT_PROJECT_VERSION: 1

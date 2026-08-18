@@ -1,0 +1,355 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		138D298FC225238F9B3319D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19106B6D24C67A9F067D3E3F /* Assets.xcassets */; };
+		15AF43AF8F944F4061DA1861 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14588339BF7DD18FD01AA02B /* LibraryStore.swift */; };
+		5096FBE7D2910BB53760E95F /* OfflineMusicCloudClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */; };
+		6E8ED5C8772DCE343536AFA6 /* AudioDocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE61C7C5540F06B207B6D2E /* AudioDocumentPicker.swift */; };
+		846AF236011BC69AEA875AF1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCC47CC661114EB18C3438D /* Models.swift */; };
+		938D7863430C4DBCA9AF52F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AFC7B5F0FD4F520578F965 /* ContentView.swift */; };
+		B16A2836ACFDDDEA56B5BDC6 /* MusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A59C2539B4C51FE2D27807 /* MusicPlayer.swift */; };
+		BCDC74F032254800AD0A342B /* OfflineMusicApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */; };
+		C2C8E709695E174A57EF9044 /* ArtworkPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E54493DBC7C1B3CFAB76B4 /* ArtworkPalette.swift */; };
+		FFA42202CFDF8FD1D1FF3ABF /* MCPSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F54AF08A3C5897DEFC4F68BC /* MCPSettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0988AA48F91C52CFE2C54A3F /* OfflineMusic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OfflineMusic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		14588339BF7DD18FD01AA02B /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
+		16A59C2539B4C51FE2D27807 /* MusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlayer.swift; sourceTree = "<group>"; };
+		19106B6D24C67A9F067D3E3F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		36E54493DBC7C1B3CFAB76B4 /* ArtworkPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkPalette.swift; sourceTree = "<group>"; };
+		4FCC47CC661114EB18C3438D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		5A24FC7946C9D91B0E58D8F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMusicApp.swift; sourceTree = "<group>"; };
+		BDE61C7C5540F06B207B6D2E /* AudioDocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDocumentPicker.swift; sourceTree = "<group>"; };
+		D0AFC7B5F0FD4F520578F965 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMusicCloudClient.swift; sourceTree = "<group>"; };
+		F54AF08A3C5897DEFC4F68BC /* MCPSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSettingsView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		10E742BD48623CB1061BBE14 /* OfflineMusic */ = {
+			isa = PBXGroup;
+			children = (
+				A74F91C95D6026732EE70A2E /* Resources */,
+				F39AAEEDAFECBBDF2ED8FDB0 /* Sources */,
+			);
+			path = OfflineMusic;
+			sourceTree = "<group>";
+		};
+		2AA38B4E82C7A12555ABDB50 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0988AA48F91C52CFE2C54A3F /* OfflineMusic.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3B7D2F4F952CFC606BA7B102 = {
+			isa = PBXGroup;
+			children = (
+				10E742BD48623CB1061BBE14 /* OfflineMusic */,
+				2AA38B4E82C7A12555ABDB50 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A74F91C95D6026732EE70A2E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				19106B6D24C67A9F067D3E3F /* Assets.xcassets */,
+				5A24FC7946C9D91B0E58D8F8 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F39AAEEDAFECBBDF2ED8FDB0 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				36E54493DBC7C1B3CFAB76B4 /* ArtworkPalette.swift */,
+				BDE61C7C5540F06B207B6D2E /* AudioDocumentPicker.swift */,
+				D0AFC7B5F0FD4F520578F965 /* ContentView.swift */,
+				14588339BF7DD18FD01AA02B /* LibraryStore.swift */,
+				F54AF08A3C5897DEFC4F68BC /* MCPSettingsView.swift */,
+				4FCC47CC661114EB18C3438D /* Models.swift */,
+				16A59C2539B4C51FE2D27807 /* MusicPlayer.swift */,
+				82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */,
+				D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B3C4E02B124108E159B1C886 /* OfflineMusic */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 14D0A906B29B5484F20A52E1 /* Build configuration list for PBXNativeTarget "OfflineMusic" */;
+			buildPhases = (
+				D545DD5FD433B2B3AC881C21 /* Sources */,
+				E3DD7B395252A38A31B186B5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OfflineMusic;
+			packageProductDependencies = (
+			);
+			productName = OfflineMusic;
+			productReference = 0988AA48F91C52CFE2C54A3F /* OfflineMusic.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		978EB2CA95784B1E8E370033 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = E147B17842BA629C5778D791 /* Build configuration list for PBXProject "OfflineMusic" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 3B7D2F4F952CFC606BA7B102;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2AA38B4E82C7A12555ABDB50 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B3C4E02B124108E159B1C886 /* OfflineMusic */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E3DD7B395252A38A31B186B5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				138D298FC225238F9B3319D1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D545DD5FD433B2B3AC881C21 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2C8E709695E174A57EF9044 /* ArtworkPalette.swift in Sources */,
+				6E8ED5C8772DCE343536AFA6 /* AudioDocumentPicker.swift in Sources */,
+				938D7863430C4DBCA9AF52F8 /* ContentView.swift in Sources */,
+				15AF43AF8F944F4061DA1861 /* LibraryStore.swift in Sources */,
+				FFA42202CFDF8FD1D1FF3ABF /* MCPSettingsView.swift in Sources */,
+				846AF236011BC69AEA875AF1 /* Models.swift in Sources */,
+				B16A2836ACFDDDEA56B5BDC6 /* MusicPlayer.swift in Sources */,
+				BCDC74F032254800AD0A342B /* OfflineMusicApp.swift in Sources */,
+				5096FBE7D2910BB53760E95F /* OfflineMusicCloudClient.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		570E0F6E82EF235F29A12A39 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = OfflineMusic/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusic;
+				PRODUCT_NAME = "Offline Music";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		8F0F81ED2D5AC340B2C73853 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		9DBAC406356958CA69825F0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = OfflineMusic/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusic;
+				PRODUCT_NAME = "Offline Music";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BCC0B468060C6659E8914ABD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		14D0A906B29B5484F20A52E1 /* Build configuration list for PBXNativeTarget "OfflineMusic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9DBAC406356958CA69825F0F /* Debug */,
+				570E0F6E82EF235F29A12A39 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E147B17842BA629C5778D791 /* Build configuration list for PBXProject "OfflineMusic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BCC0B468060C6659E8914ABD /* Debug */,
+				8F0F81ED2D5AC340B2C73853 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 978EB2CA95784B1E8E370033 /* Project object */;
+}
