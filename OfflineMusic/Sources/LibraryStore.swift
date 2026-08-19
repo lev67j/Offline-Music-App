@@ -564,10 +564,38 @@ final class LibraryStore: ObservableObject {
         audioURL: URL,
         coversURL: URL
     ) throws -> ImportedLibrary {
-        let manager = FileManager.default
         let hasAccess = folderURL.startAccessingSecurityScopedResource()
         defer { if hasAccess { folderURL.stopAccessingSecurityScopedResource() } }
 
+        var coordinationError: NSError?
+        var importResult: Result<ImportedLibrary, Error>?
+        NSFileCoordinator().coordinate(
+            readingItemAt: folderURL,
+            options: .withoutChanges,
+            error: &coordinationError
+        ) { coordinatedURL in
+            importResult = Result {
+                let exportRoot = try LibraryExportFolderResolver.resolve(from: coordinatedURL)
+                return try readCoordinatedExportFolder(
+                    exportRoot,
+                    audioURL: audioURL,
+                    coversURL: coversURL
+                )
+            }
+        }
+
+        if let importResult {
+            return try importResult.get()
+        }
+        throw coordinationError ?? LibraryTransferError.folderUnavailable
+    }
+
+    nonisolated private static func readCoordinatedExportFolder(
+        _ folderURL: URL,
+        audioURL: URL,
+        coversURL: URL
+    ) throws -> ImportedLibrary {
+        let manager = FileManager.default
         let manifestURL = folderURL.appendingPathComponent("manifest.json")
         let manifest = try JSONDecoder().decode(
             LibraryExportManifest.self,
@@ -1134,12 +1162,14 @@ private enum LibraryTransferError: LocalizedError {
     case unsupportedFormat
     case missingAudio
     case invalidPath
+    case folderUnavailable
 
     var errorDescription: String? {
         switch self {
         case .unsupportedFormat: return "This export format is not supported."
         case .missingAudio: return "An audio file listed in the manifest is missing."
         case .invalidPath: return "The export contains an unsafe file path."
+        case .folderUnavailable: return "The selected folder is unavailable. Download it in Files and try again."
         }
     }
 }

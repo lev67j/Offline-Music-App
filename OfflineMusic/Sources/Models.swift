@@ -153,3 +153,57 @@ struct DeletionTombstone: Codable, Equatable {
     let id: UUID
     let updatedAt: Date
 }
+
+enum LibraryExportFolderResolver {
+    enum Failure: LocalizedError {
+        case manifestNotFound
+        case multipleExports
+
+        var errorDescription: String? {
+            switch self {
+            case .manifestNotFound:
+                return "No Offline Music export was found. Select the exported folder that contains manifest.json and Tracks."
+            case .multipleExports:
+                return "This folder contains several Offline Music exports. Select one export folder."
+            }
+        }
+    }
+
+    /// File providers do not all return the same directory level. Resolve the
+    /// export itself, a directory containing one export, or a visible child such
+    /// as Tracks without recursively scanning unrelated user files.
+    static func resolve(from selectedURL: URL, manager: FileManager = .default) throws -> URL {
+        let selectedURL = selectedURL.standardizedFileURL
+
+        if manager.fileExists(atPath: selectedURL.appendingPathComponent("manifest.json").path) {
+            return selectedURL
+        }
+
+        let children = (try? manager.contentsOfDirectory(
+            at: selectedURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        )) ?? []
+        let childExports = children.filter {
+            manager.fileExists(atPath: $0.appendingPathComponent("manifest.json").path)
+        }
+        if childExports.count == 1, let export = childExports.first {
+            return export.standardizedFileURL
+        }
+        if childExports.count > 1 {
+            throw Failure.multipleExports
+        }
+
+        var ancestor = selectedURL
+        for _ in 0..<2 {
+            let parent = ancestor.deletingLastPathComponent().standardizedFileURL
+            guard parent != ancestor else { break }
+            if manager.fileExists(atPath: parent.appendingPathComponent("manifest.json").path) {
+                return parent
+            }
+            ancestor = parent
+        }
+
+        throw Failure.manifestNotFound
+    }
+}
