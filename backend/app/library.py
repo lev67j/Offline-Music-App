@@ -5,7 +5,10 @@ from datetime import datetime, timezone
 import json
 from typing import Any
 
-from .models import Device
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from .models import Device, DeviceLibraryBackup
 
 
 EMPTY_LIBRARY: dict[str, Any] = {
@@ -32,9 +35,36 @@ def load_library(device: Device) -> dict[str, Any]:
     return result
 
 
-def save_library(device: Device, library: dict[str, Any]) -> None:
-    device.library_json = json.dumps(library, ensure_ascii=False, separators=(",", ":"))
+async def save_library_with_backup(
+    session: AsyncSession,
+    device: Device,
+    library: dict[str, Any],
+    *,
+    reason: str,
+) -> bool:
+    encoded = json.dumps(library, ensure_ascii=False, separators=(",", ":"))
+    if encoded == device.library_json:
+        return False
+
+    session.add(DeviceLibraryBackup(
+        device_id=device.id,
+        library_json=device.library_json,
+        revision=device.revision,
+        reason=reason[:64],
+    ))
+    device.library_json = encoded
     device.revision += 1
+    await session.flush()
+
+    expired_ids = list((await session.scalars(
+        select(DeviceLibraryBackup.id)
+        .where(DeviceLibraryBackup.device_id == device.id)
+        .order_by(DeviceLibraryBackup.created_at.desc(), DeviceLibraryBackup.id.desc())
+        .offset(30)
+    )).all())
+    if expired_ids:
+        await session.execute(delete(DeviceLibraryBackup).where(DeviceLibraryBackup.id.in_(expired_ids)))
+    return True
 
 
 def _timestamp(item: dict[str, Any]) -> datetime:
@@ -80,6 +110,4 @@ def merge_library(device: Device, incoming: dict[str, Any]) -> dict[str, Any]:
     for album in current["albums"]:
         album["track_ids"] = [track_id for track_id in album.get("track_ids", []) if track_id in active_track_ids]
 
-    save_library(device, current)
     return current
-

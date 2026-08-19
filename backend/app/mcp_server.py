@@ -11,10 +11,11 @@ from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
+from sqlalchemy import select
 
 from .auth import ALL_SCOPES, DELETE_SCOPE, READ_SCOPE, WRITE_SCOPE, decode_access_token, now_utc, public_base_url, resource_url
 from .database import SessionLocal
-from .library import load_library, now_iso, save_library
+from .library import load_library, now_iso, save_library_with_backup
 from .models import Connection, Device
 
 
@@ -48,12 +49,14 @@ def identity(scope: str) -> uuid.UUID:
 
 async def mutate(device_id: uuid.UUID, operation) -> Any:
     async with SessionLocal() as session:
-        device = await session.get(Device, device_id)
+        device = await session.scalar(
+            select(Device).where(Device.id == device_id).with_for_update()
+        )
         if not device:
             raise HTTPException(404, "Library not found")
         library = load_library(device)
         result = operation(library)
-        save_library(device, library)
+        await save_library_with_backup(session, device, library, reason="mcp-mutation")
         await session.commit()
         return result
 
@@ -246,4 +249,3 @@ def create_mcp() -> FastMCP:
 
 
 offline_music_mcp = create_mcp()
-

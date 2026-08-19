@@ -14,31 +14,23 @@ struct ContentView: View {
     @State private var coverPickerItem: PhotosPickerItem?
     @State private var artworkTrackID: UUID?
     @State private var isShowingMCPSettings = false
+    @State private var didRecordFirstFrame = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            AppBackground()
-
-            ScrollView {
-                VStack(spacing: 28) {
-                    topBar
-                    playlistHeader
-                    trackSection
-                }
-                .padding(.horizontal, 22)
-                .padding(.top, 18)
-                .padding(.bottom, 128)
+        Group {
+            if library.isLibraryReady {
+                libraryContent
+            } else {
+                launchContent
             }
-            .scrollIndicators(.hidden)
-
-            PlayerIsland(
-                isShowingQueue: $isShowingQueue,
-                artworkTrackID: $artworkTrackID
-            )
-                .environmentObject(library)
-                .environmentObject(player)
-                .padding(.horizontal, 18)
-                .padding(.bottom, 12)
+        }
+        .task { await library.start() }
+        .onAppear {
+            guard !didRecordFirstFrame else { return }
+            didRecordFirstFrame = true
+            let elapsed = ProcessInfo.processInfo.systemUptime - LaunchPerformance.processStartedAt
+            LaunchPerformance.logger
+                .notice("First UI frame ready in \(elapsed, format: .fixed(precision: 3)) seconds")
         }
         .sheet(isPresented: $isImporting) {
             AudioDocumentPicker { urls in
@@ -105,6 +97,52 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    private var libraryContent: some View {
+        ZStack(alignment: .bottom) {
+            AppBackground(
+                artworkURL: library.playlistCoverURL(for: library.selectedPlaylist)
+            )
+
+            ScrollView {
+                VStack(spacing: 28) {
+                    topBar
+                    playlistHeader
+                    trackSection
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 18)
+                .padding(.bottom, 128)
+            }
+            .scrollIndicators(.hidden)
+
+            PlayerIsland(
+                isShowingQueue: $isShowingQueue,
+                artworkTrackID: $artworkTrackID
+            )
+                .environmentObject(library)
+                .environmentObject(player)
+                .padding(.horizontal, 18)
+                .padding(.bottom, 12)
+        }
+    }
+
+    private var launchContent: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            VStack(spacing: 16) {
+                Image(systemName: "music.note")
+                    .font(.system(size: 44, weight: .bold))
+                    .foregroundStyle(Color.accentColor)
+                Text("Offline Music")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                ProgressView()
+                    .tint(Color.accentColor)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Offline Music is loading your protected library")
     }
 
     private var topBar: some View {
@@ -1165,15 +1203,22 @@ private struct ArtworkView: View {
 }
 
 private struct AppBackground: View {
+    let artworkURL: URL?
+    @State private var colors = ArtworkPalette.fallback
+
     var body: some View {
         ZStack {
-            Color(red: 0.035, green: 0.04, blue: 0.038)
+            LinearGradient(
+                colors: colors,
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
 
             RadialGradient(
-                colors: [Color.accentColor.opacity(0.19), .clear],
-                center: UnitPoint(x: 0.5, y: 0.0),
+                colors: [colors[1].opacity(0.72), .clear],
+                center: UnitPoint(x: 0.78, y: 0.02),
                 startRadius: 0,
-                endRadius: 430
+                endRadius: 480
             )
 
             LinearGradient(
@@ -1183,6 +1228,20 @@ private struct AppBackground: View {
             )
         }
         .ignoresSafeArea()
+        .task(id: artworkURL?.path) {
+            guard let path = artworkURL?.path else {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    colors = ArtworkPalette.fallback
+                }
+                return
+            }
+            let palette = await Task.detached(priority: .utility) {
+                ArtworkPalette.colors(fromImageAt: path)
+            }.value
+            withAnimation(.easeInOut(duration: 0.45)) {
+                colors = palette
+            }
+        }
     }
 }
 

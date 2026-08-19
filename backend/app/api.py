@@ -24,7 +24,7 @@ from .auth import (
     resource_url,
 )
 from .database import get_session
-from .library import load_library, merge_library
+from .library import load_library, merge_library, save_library_with_backup
 from .models import Connection, Device
 
 router = APIRouter()
@@ -52,9 +52,15 @@ async def sync_library(
     device: Device = Depends(current_device),
     session: AsyncSession = Depends(get_session),
 ) -> dict:
-    library = merge_library(device, payload.model_dump())
+    locked_device = await session.scalar(
+        select(Device).where(Device.id == device.id).with_for_update()
+    )
+    if not locked_device:
+        raise HTTPException(404, "Library not found")
+    library = merge_library(locked_device, payload.model_dump())
+    await save_library_with_backup(session, locked_device, library, reason="device-sync")
     await session.commit()
-    return {**library, "revision": device.revision}
+    return {**library, "revision": locked_device.revision}
 
 
 @router.get("/api/v1/library")

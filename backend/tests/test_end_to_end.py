@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import base64
+import asyncio
 import hashlib
 import os
+import uuid
 from urllib.parse import parse_qs, urlparse
 
 from fastapi.testclient import TestClient
@@ -11,6 +13,8 @@ os.environ.setdefault("OFFLINE_MUSIC_JWT_SECRET", "offline-music-test-secret")
 os.environ.setdefault("OFFLINE_MUSIC_PUBLIC_BASE_URL", "http://testserver")
 
 from app.main import app
+from app.database import SessionLocal
+from app.models import DeviceLibraryBackup
 
 
 def challenge(verifier: str) -> str:
@@ -42,6 +46,19 @@ def test_device_sync_oauth_and_mcp_tools() -> None:
         )
         assert synced.status_code == 200
         assert synced.json()["albums"][0]["name"] == "Offline Music"
+
+        device_id = uuid.UUID(registration.json()["device_token"].split(".", 1)[0])
+
+        async def backup_count() -> int:
+            from sqlalchemy import func, select
+            async with SessionLocal() as session:
+                return int(await session.scalar(
+                    select(func.count()).select_from(DeviceLibraryBackup).where(
+                        DeviceLibraryBackup.device_id == device_id
+                    )
+                ) or 0)
+
+        assert asyncio.run(backup_count()) == 1
 
         link = client.post("/api/v1/mcp/link_codes", headers=headers)
         assert link.status_code == 200

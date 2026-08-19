@@ -102,12 +102,51 @@ enum RepeatMode: String, Codable, Equatable {
 }
 
 struct LibrarySnapshot: Codable {
+    var schemaVersion: Int
+    var savedAt: Date
     var tracks: [Track]
     var playlists: [Playlist]
     var selectedPlaylistID: UUID?
     var queue: [QueueEntry]
     var trackTombstones: [DeletionTombstone]?
     var albumTombstones: [DeletionTombstone]?
+
+    init(
+        schemaVersion: Int = 2,
+        savedAt: Date = Date(),
+        tracks: [Track],
+        playlists: [Playlist],
+        selectedPlaylistID: UUID?,
+        queue: [QueueEntry],
+        trackTombstones: [DeletionTombstone]? = [],
+        albumTombstones: [DeletionTombstone]? = []
+    ) {
+        self.schemaVersion = schemaVersion
+        self.savedAt = savedAt
+        self.tracks = tracks
+        self.playlists = playlists
+        self.selectedPlaylistID = selectedPlaylistID
+        self.queue = queue
+        self.trackTombstones = trackTombstones
+        self.albumTombstones = albumTombstones
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion, savedAt, tracks, playlists, selectedPlaylistID, queue
+        case trackTombstones, albumTombstones
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
+        savedAt = try container.decodeIfPresent(Date.self, forKey: .savedAt) ?? .distantPast
+        tracks = try container.decodeIfPresent([Track].self, forKey: .tracks) ?? []
+        playlists = try container.decodeIfPresent([Playlist].self, forKey: .playlists) ?? []
+        selectedPlaylistID = try container.decodeIfPresent(UUID.self, forKey: .selectedPlaylistID)
+        queue = try container.decodeIfPresent([QueueEntry].self, forKey: .queue) ?? []
+        trackTombstones = try container.decodeIfPresent([DeletionTombstone].self, forKey: .trackTombstones) ?? []
+        albumTombstones = try container.decodeIfPresent([DeletionTombstone].self, forKey: .albumTombstones) ?? []
+    }
 }
 
 struct DeletionTombstone: Codable, Equatable {

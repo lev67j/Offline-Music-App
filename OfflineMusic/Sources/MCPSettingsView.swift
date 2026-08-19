@@ -4,10 +4,45 @@ import UIKit
 struct MCPSettingsView: View {
     @EnvironmentObject private var library: LibraryStore
     @Environment(\.dismiss) private var dismiss
+    @State private var isImportingLibrary = false
+    @State private var exportFolderURL: URL?
+    @State private var isShowingExporter = false
 
     var body: some View {
         NavigationStack {
             List {
+                Section("Library safety") {
+                    Label(library.dataSafetyStatus, systemImage: "checkmark.shield.fill")
+                        .foregroundStyle(.green)
+
+                    Button {
+                        Task {
+                            if let folder = await library.makeExportFolder() {
+                                exportFolderURL = folder
+                                isShowingExporter = true
+                            }
+                        }
+                    } label: {
+                        Label("Export complete library", systemImage: "square.and.arrow.up")
+                    }
+
+                    Button {
+                        isImportingLibrary = true
+                    } label: {
+                        Label("Import exported folder", systemImage: "square.and.arrow.down")
+                    }
+
+                    if let status = library.transferStatus {
+                        Text(status)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Text("An export contains every audio file, cover, lyric, track field, playlist and queue in a readable folder with a versioned manifest.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
                 Section("ChatGPT / MCP") {
                     LabeledContent("Status") {
                         Text(library.syncStatus)
@@ -91,7 +126,7 @@ struct MCPSettingsView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Color.black)
-            .navigationTitle("Connections")
+            .navigationTitle("Settings")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
@@ -103,5 +138,17 @@ struct MCPSettingsView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $isImportingLibrary) {
+            LibraryFolderImportPicker { folder in
+                library.importLibraryFolder(from: folder)
+            }
+        }
+        .sheet(isPresented: $isShowingExporter, onDismiss: {
+            exportFolderURL = nil
+        }) {
+            if let exportFolderURL {
+                LibraryFolderExportPicker(folderURL: exportFolderURL)
+            }
+        }
     }
 }
