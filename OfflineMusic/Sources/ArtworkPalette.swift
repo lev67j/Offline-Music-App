@@ -8,6 +8,29 @@ enum ArtworkPalette {
         Color(red: 0.02, green: 0.025, blue: 0.024)
     ]
 
+    static let fallbackAccent = Color(red: 0.28, green: 0.82, blue: 0.58)
+
+    static func accentColor(from palette: [Color]) -> Color {
+        guard let dominantColor = palette.first else { return fallbackAccent }
+
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        guard UIColor(dominantColor).getHue(
+            &hue,
+            saturation: &saturation,
+            brightness: &brightness,
+            alpha: &alpha
+        ) else { return fallbackAccent }
+
+        return Color(
+            hue: Double(hue),
+            saturation: Double(max(saturation, 0.58)),
+            brightness: Double(max(brightness, 0.76))
+        )
+    }
+
     nonisolated static func colors(fromImageAt path: String) -> [Color] {
         guard let image = UIImage(contentsOfFile: path),
               let pixels = image.sampledRGBA(width: 36, height: 36)

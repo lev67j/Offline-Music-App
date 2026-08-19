@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var artworkTrackID: UUID?
     @State private var isShowingMCPSettings = false
     @State private var didRecordFirstFrame = false
+    @State private var albumAccentColor = ArtworkPalette.fallbackAccent
 
     var body: some View {
         Group {
@@ -24,7 +25,22 @@ struct ContentView: View {
                 launchContent
             }
         }
+        .tint(albumAccentColor)
+        .accentColor(albumAccentColor)
         .task { await library.start() }
+        .task(id: selectedPlaylistArtworkURL?.path) {
+            guard let path = selectedPlaylistArtworkURL?.path else {
+                albumAccentColor = ArtworkPalette.fallbackAccent
+                return
+            }
+
+            let palette = await Task.detached(priority: .utility) {
+                ArtworkPalette.colors(fromImageAt: path)
+            }.value
+            withAnimation(.easeInOut(duration: 0.35)) {
+                albumAccentColor = ArtworkPalette.accentColor(from: palette)
+            }
+        }
         .onAppear {
             guard !didRecordFirstFrame else { return }
             didRecordFirstFrame = true
@@ -126,6 +142,10 @@ struct ContentView: View {
                 .padding(.horizontal, 18)
                 .padding(.bottom, 12)
         }
+    }
+
+    private var selectedPlaylistArtworkURL: URL? {
+        library.playlistCoverURL(for: library.selectedPlaylist)
     }
 
     private var launchContent: some View {
@@ -763,6 +783,8 @@ private struct NowPlayingArtworkView: View {
                 backgroundColors = colors
             }
         }
+        .tint(ArtworkPalette.accentColor(from: backgroundColors))
+        .accentColor(ArtworkPalette.accentColor(from: backgroundColors))
         .onChange(of: coverPickerItem) { _, newItem in
             guard let newItem else { return }
             Task {
