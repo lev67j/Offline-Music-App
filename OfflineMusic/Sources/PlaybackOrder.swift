@@ -7,9 +7,12 @@ enum PlaybackOrder {
     ///
     /// Without a search this is the playlist itself. With a search it is the
     /// visible results, top to bottom, followed by the playlist from the track
-    /// after the last result.
-    static func linear(playlist: [UUID], visible: [UUID]?) -> [UUID] {
-        guard let visible, visible != playlist,
+    /// after the last result. With `onlyVisible` (tags are selected) it stops
+    /// after the results.
+    static func linear(playlist: [UUID], visible: [UUID]?, onlyVisible: Bool = false) -> [UUID] {
+        guard let visible else { return playlist }
+        if onlyVisible { return visible.filter { playlist.contains($0) } }
+        guard visible != playlist,
               let last = visible.last,
               let lastIndex = playlist.firstIndex(of: last)
         else { return playlist }

@@ -13,6 +13,8 @@ struct Track: Identifiable, Codable, Equatable {
     var remoteAudioURL: URL?
     var remoteCoverURL: URL?
     var updatedAt: Date?
+    /// Labels the user makes up, such as "gym" or "calm". `nil` in older libraries.
+    var tags: [String]?
 
     init(
         id: UUID = UUID(),
@@ -26,7 +28,8 @@ struct Track: Identifiable, Codable, Equatable {
         dateAdded: Date? = nil,
         remoteAudioURL: URL? = nil,
         remoteCoverURL: URL? = nil,
-        updatedAt: Date? = Date()
+        updatedAt: Date? = Date(),
+        tags: [String]? = nil
     ) {
         self.id = id
         self.title = title
@@ -40,12 +43,39 @@ struct Track: Identifiable, Codable, Equatable {
         self.remoteAudioURL = remoteAudioURL
         self.remoteCoverURL = remoteCoverURL
         self.updatedAt = updatedAt
+        self.tags = tags
     }
 }
 
 extension Track {
+    var tagList: [String] {
+        tags ?? []
+    }
+
+    func hasTag(_ tag: String) -> Bool {
+        tagList.contains { TrackTag.key($0) == TrackTag.key(tag) }
+    }
+
     var hasLyrics: Bool {
         !(lyrics?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+    }
+}
+
+enum TrackTag {
+    /// Comparison key: tags differ only by meaning, not by case or spacing.
+    static func key(_ tag: String) -> String {
+        clean(tag).folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+    }
+
+    static func clean(_ tag: String) -> String {
+        tag.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+            .trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+    }
+
+    /// Trimmed, non-empty and without duplicates, keeping the first spelling.
+    static func normalized(_ tags: [String]) -> [String] {
+        var seen = Set<String>()
+        return tags.map(clean).filter { !$0.isEmpty && seen.insert(key($0)).inserted }
     }
 }
 

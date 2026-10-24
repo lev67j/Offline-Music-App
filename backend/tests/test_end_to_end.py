@@ -129,6 +129,44 @@ def test_device_sync_oauth_and_mcp_tools() -> None:
         assert "delete_track" in names
         assert "set_track_lyrics" in names
         assert "delete_album" not in names
+        assert {"tag_tracks", "set_track_tags", "list_tags", "remove_track_from_album"} <= names
+
+        def call(request_id: int, name: str, arguments: dict) -> dict:
+            response = client.post("/mcp", headers=mcp_headers, json={
+                "jsonrpc": "2.0", "id": request_id, "method": "tools/call",
+                "params": {"name": name, "arguments": arguments},
+            })
+            assert response.status_code == 200, response.text
+            result = response.json()["result"]
+            assert not result.get("isError"), result
+            import json
+            return result.get("structuredContent") or json.loads(result["content"][0]["text"])
+
+        album_id = "10000000-0000-0000-0000-000000000001"
+        first = call(10, "add_track", {"title": "Run", "artist": "A", "album_id": album_id})
+        second = call(11, "add_track", {"title": "Sleep", "artist": "B", "album_id": album_id})
+        tagged = call(12, "tag_tracks", {"track_ids": [first["id"], second["id"]], "add": ["#Gym", "night"]})
+        assert tagged["changed_count"] == 2
+        call(13, "tag_tracks", {"track_ids": [second["id"]], "add": ["Calm"], "remove": ["GYM"]})
+        tags = {item["tag"]: item["track_count"] for item in call(14, "list_tags", {"album_id": album_id})["tags"]}
+        assert tags == {"Gym": 1, "night": 2, "Calm": 1}
+        gym = call(15, "list_tracks", {"tag": "gym"})["tracks"]
+        assert [item["title"] for item in gym] == ["Run"]
+        assert call(16, "set_track_tags", {"track_id": first["id"], "tags": []})["tags"] is None
+
+        removed = call(17, "remove_track_from_album", {"track_id": first["id"], "album_id": album_id})
+        assert removed["track_ids"] == [second["id"]]
+        library = client.get("/api/v1/library", headers=headers).json()
+        assert first["id"] in {item["id"] for item in library["tracks"]}
+        assert library["tracks"][-1]["tags"] == ["night", "Calm"]
+
+        registered = client.post("/oauth/register", json={
+            "client_name": "Claude Code", "redirect_uris": ["http://localhost:53682/callback"],
+        })
+        assert registered.status_code == 201
+        assert registered.json()["client_id"].startswith("mcp-client-")
+        assert client.post("/oauth/register", json={"redirect_uris": ["https://evil.example/cb"]}).status_code == 400
+        assert client.get("/.well-known/oauth-authorization-server").json()["registration_endpoint"].endswith("/oauth/register")
 
         response = client.get(
             "/oauth/authorize",

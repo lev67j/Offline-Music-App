@@ -33,6 +33,28 @@ final class OfflineMusicUITests: XCTestCase {
         ])
     }
 
+    func testSelectedTagsLimitTheListAndTheQueue() {
+        turnShuffleOff()
+        // "drive": Night Bus to Nowhere, Slow Motion Summer, Afterglow Drive.
+        let drive = app.buttons["Tag drive"]
+        XCTAssertTrue(drive.waitForExistence(timeout: 5))
+        drive.tap()
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Glass Garden,'")).firstMatch
+            .waitForNonExistence(timeout: 3))
+
+        app.swipeUp()
+        row("Night Bus to Nowhere").tap()
+        XCTAssertEqual(queueTitles(), ["Slow Motion Summer", "Afterglow Drive"])
+
+        // Two tags show tracks with either of them.
+        app.swipeDown()
+        app.buttons["Tag drive"].swipeLeft()
+        app.buttons["Tag gym"].tap()
+        app.swipeUp()
+        row("Slow Motion Summer").tap()
+        XCTAssertEqual(queueTitles(), ["Concrete Bloom", "Afterglow Drive", "Midnight Arcade"])
+    }
+
     func testShuffleSurvivesRelaunchAndQueuesEveryOtherTrack() {
         let shuffle = app.buttons["Shuffle"].firstMatch
         if shuffle.value as? String != "On" { shuffle.tap() }
@@ -51,6 +73,7 @@ final class OfflineMusicUITests: XCTestCase {
 
     func testScreenshots() {
         turnShuffleOff()
+        app.swipeUp()
         row("Neon Harbor").tap()
         sleep(4)
         app.swipeDown()
@@ -61,7 +84,7 @@ final class OfflineMusicUITests: XCTestCase {
         attach("2-now-playing")
         app.buttons["Back"].tap()
 
-        search("night")
+        app.buttons["Tag night"].tap()
         row("Night Swim").tap()
         // Scroll so the search field sits at the top with its results below.
         let field = app.textFields["Search tracks in playlist"]

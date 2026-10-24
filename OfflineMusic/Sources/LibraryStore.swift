@@ -272,6 +272,47 @@ final class LibraryStore: ObservableObject {
         save()
     }
 
+    /// Every tag on the tracks of a playlist, most used first.
+    func tags(inPlaylist playlistID: UUID?) -> [String] {
+        guard let playlistID else { return [] }
+        var counts: [String: (name: String, count: Int)] = [:]
+        for id in trackIDs(inPlaylist: playlistID) {
+            for tag in tracksByID[id]?.tagList ?? [] {
+                let key = TrackTag.key(tag)
+                counts[key] = (counts[key]?.name ?? tag, (counts[key]?.count ?? 0) + 1)
+            }
+        }
+        return counts.values
+            .sorted { $0.count != $1.count ? $0.count > $1.count : $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            .map(\.name)
+    }
+
+    /// Every tag in the library, for suggestions.
+    var allTags: [String] {
+        TrackTag.normalized(tracks.flatMap(\.tagList)).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    func addTag(_ tag: String, to trackID: UUID) {
+        guard let index = tracks.firstIndex(where: { $0.id == trackID }) else { return }
+        // Reuse the library's spelling of an existing tag.
+        let spelling = allTags.first { TrackTag.key($0) == TrackTag.key(tag) } ?? tag
+        let updated = TrackTag.normalized(tracks[index].tagList + [spelling])
+        guard updated != tracks[index].tagList else { return }
+        setTags(updated, at: index)
+    }
+
+    func removeTag(_ tag: String, from trackID: UUID) {
+        guard let index = tracks.firstIndex(where: { $0.id == trackID }) else { return }
+        setTags(tracks[index].tagList.filter { TrackTag.key($0) != TrackTag.key(tag) }, at: index)
+    }
+
+    private func setTags(_ tags: [String], at index: Int) {
+        tracks[index].tags = tags.isEmpty ? nil : tags
+        tracks[index].updatedAt = Date()
+        tracksByID[tracks[index].id] = tracks[index]
+        save()
+    }
+
     func setCover(data: Data, for trackID: UUID) {
         guard let trackIndex = tracks.firstIndex(where: { $0.id == trackID }),
               let coverFileName = writeCoverImage(data: data)
@@ -1101,7 +1142,8 @@ final class LibraryStore: ObservableObject {
             dateAdded: remote.dateAdded,
             remoteAudioURL: remote.audioURL,
             remoteCoverURL: remote.coverURL,
-            updatedAt: remote.updatedAt
+            updatedAt: remote.updatedAt,
+            tags: remote.tags.map(TrackTag.normalized)
         )
     }
 
@@ -1208,6 +1250,7 @@ private struct ExportedTrack: Codable {
     let coverPath: String?
     let lyricsPath: String?
     let lyrics: String?
+    let tags: [String]?
     let dateAdded: Date?
     let remoteAudioURL: URL?
     let remoteCoverURL: URL?
@@ -1223,6 +1266,7 @@ private struct ExportedTrack: Codable {
         self.coverPath = coverPath
         self.lyricsPath = lyricsPath
         lyrics = track.lyrics
+        tags = track.tags
         dateAdded = track.dateAdded
         remoteAudioURL = track.remoteAudioURL
         remoteCoverURL = track.remoteCoverURL
@@ -1242,7 +1286,8 @@ private struct ExportedTrack: Codable {
             dateAdded: dateAdded,
             remoteAudioURL: remoteAudioURL,
             remoteCoverURL: remoteCoverURL,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            tags: tags
         )
     }
 }

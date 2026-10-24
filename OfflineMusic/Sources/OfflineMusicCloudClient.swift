@@ -55,6 +55,7 @@ struct CloudTrack: Codable {
     var audioURL: URL?
     var coverURL: URL?
     var lyrics: String?
+    var tags: [String]?
     var dateAdded: Date?
     var updatedAt: Date
 
@@ -67,12 +68,13 @@ struct CloudTrack: Codable {
         audioURL = track.remoteAudioURL
         coverURL = track.remoteCoverURL
         lyrics = track.lyrics
+        tags = track.tags
         dateAdded = track.dateAdded
         updatedAt = track.updatedAt ?? track.dateAdded ?? .distantPast
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, title, artist, album, duration, lyrics
+        case id, title, artist, album, duration, lyrics, tags
         case audioURL = "audio_url"
         case coverURL = "cover_url"
         case dateAdded = "date_added"

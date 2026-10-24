@@ -68,6 +68,41 @@ def find(items: list[dict], item_id: str, kind: str) -> dict:
     return item
 
 
+def clean_tag(tag: str) -> str:
+    return " ".join(str(tag).split()).strip("#").strip()
+
+
+def tag_key(tag: str) -> str:
+    return clean_tag(tag).casefold()
+
+
+def normalized_tags(tags: list[str]) -> list[str]:
+    """Trimmed, without '#', without case-insensitive duplicates; first spelling wins."""
+    seen: set[str] = set()
+    result = []
+    for tag in tags:
+        cleaned = clean_tag(tag)
+        if cleaned and tag_key(cleaned) not in seen:
+            seen.add(tag_key(cleaned))
+            result.append(cleaned)
+    return result
+
+
+def library_spelling(library: dict, tags: list[str]) -> list[str]:
+    """Reuses the spelling a tag already has somewhere in the library."""
+    known = {tag_key(tag): tag for track in library["tracks"] for tag in track.get("tags") or []}
+    return [known.get(tag_key(tag), tag) for tag in normalized_tags(tags)]
+
+
+def tag_counts(tracks: list[dict]) -> list[dict]:
+    counts: dict[str, dict] = {}
+    for track in tracks:
+        for tag in track.get("tags") or []:
+            entry = counts.setdefault(tag_key(tag), {"tag": tag, "track_count": 0})
+            entry["track_count"] += 1
+    return sorted(counts.values(), key=lambda item: (-item["track_count"], item["tag"].casefold()))
+
+
 def checked_url(value: str | None) -> str | None:
     if value is None or not value.strip():
         return None
@@ -82,7 +117,11 @@ def create_mcp() -> FastMCP:
     mcp = FastMCP(
         "Offline Music",
         instructions=(
-            "Manage the user's Offline Music library. Albums are the collections shown in the app. "
+            "Manage the user's Offline Music library. Albums are the playlists shown in the app. "
+            "Tracks can carry free-form tags the user invents (for example 'gym' or 'calm'); the app lets the user "
+            "filter an album by tags, so use tag_tracks to label many tracks at once and list_tags to reuse existing "
+            "spellings. remove_track_from_album takes a track out of one playlist and keeps it in the library; "
+            "delete_track removes it everywhere. "
             "Never claim an audio file was downloaded unless audio_url was provided. Album deletion is not available."
         ),
         token_verifier=OfflineMusicTokenVerifier(),
@@ -106,8 +145,8 @@ def create_mcp() -> FastMCP:
             albums = load_library(device)["albums"] if device else []
             return {"albums": albums, "count": len(albums)}
 
-    @mcp.tool(name="list_tracks", description="List all tracks, optionally only tracks in one album.", annotations=read)
-    async def list_tracks(album_id: str | None = None) -> dict:
+    @mcp.tool(name="list_tracks", description="List all tracks, optionally only tracks in one album and/or with a tag.", annotations=read)
+    async def list_tracks(album_id: str | None = None, tag: str | None = None) -> dict:
         device_id = identity(READ_SCOPE)
         async with SessionLocal() as session:
             device = await session.get(Device, device_id)
@@ -117,7 +156,21 @@ def create_mcp() -> FastMCP:
                 album = find(library["albums"], album_id, "Album")
                 allowed = set(album.get("track_ids", []))
                 tracks = [track for track in tracks if track.get("id") in allowed]
+            if tag:
+                tracks = [track for track in tracks if tag_key(tag) in {tag_key(item) for item in track.get("tags") or []}]
             return {"tracks": tracks, "count": len(tracks)}
+
+    @mcp.tool(name="list_tags", description="List every tag with how many tracks carry it, optionally within one album.", annotations=read)
+    async def list_tags(album_id: str | None = None) -> dict:
+        device_id = identity(READ_SCOPE)
+        async with SessionLocal() as session:
+            device = await session.get(Device, device_id)
+            library = load_library(device) if device else {"tracks": [], "albums": []}
+        tracks = library["tracks"]
+        if album_id:
+            allowed = set(find(library["albums"], album_id, "Album").get("track_ids", []))
+            tracks = [track for track in tracks if track.get("id") in allowed]
+        return {"tags": tag_counts(tracks)}
 
     @mcp.tool(name="search_library", description="Search track title, artist, album metadata and lyrics.", annotations=read)
     async def search_library(query: str) -> dict:
@@ -126,7 +179,10 @@ def create_mcp() -> FastMCP:
         async with SessionLocal() as session:
             device = await session.get(Device, device_id)
             library = load_library(device) if device else {"tracks": [], "albums": []}
-        tracks = [item for item in library["tracks"] if needle in " ".join(str(item.get(key, "")) for key in ("title", "artist", "album", "lyrics")).casefold()]
+        tracks = [
+            item for item in library["tracks"]
+            if needle in " ".join([str(item.get(key, "")) for key in ("title", "artist", "album", "lyrics")] + list(item.get("tags") or [])).casefold()
+        ]
         albums = [item for item in library["albums"] if needle in str(item.get("name", "")).casefold()]
         return {"tracks": tracks, "albums": albums}
 
@@ -217,6 +273,40 @@ def create_mcp() -> FastMCP:
             track = find(library["tracks"], track_id, "Track"); track["lyrics"] = lyrics.strip() or None; track["updated_at"] = now_iso(); return track
         return await mutate(device_id, operation)
 
+    @mcp.tool(name="set_track_tags", description="Replace all tags of one track. An empty list removes every tag.", annotations=write)
+    async def set_track_tags(track_id: str, tags: list[str]) -> dict:
+        device_id = identity(WRITE_SCOPE)
+        def operation(library):
+            track = find(library["tracks"], track_id, "Track")
+            track["tags"] = library_spelling(library, tags) or None
+            track["updated_at"] = now_iso()
+            return track
+        return await mutate(device_id, operation)
+
+    @mcp.tool(
+        name="tag_tracks",
+        description="Add and/or remove tags on many tracks at once. Tags are free-form words; '#' is optional.",
+        annotations=write,
+    )
+    async def tag_tracks(track_ids: list[str], add: list[str] | None = None, remove: list[str] | None = None) -> dict:
+        device_id = identity(WRITE_SCOPE)
+        if not add and not remove:
+            raise HTTPException(400, "Nothing to add or remove")
+        def operation(library):
+            to_add = library_spelling(library, add or [])
+            to_remove = {tag_key(tag) for tag in remove or []}
+            changed = []
+            for track_id in dict.fromkeys(track_ids):
+                track = find(library["tracks"], track_id, "Track")
+                before = list(track.get("tags") or [])
+                after = normalized_tags([tag for tag in before if tag_key(tag) not in to_remove] + to_add)
+                if after != before:
+                    track["tags"] = after or None
+                    track["updated_at"] = now_iso()
+                    changed.append({"id": track_id, "title": track.get("title"), "tags": after})
+            return {"changed": changed, "changed_count": len(changed)}
+        return await mutate(device_id, operation)
+
     @mcp.tool(name="add_track_to_album", description="Add an existing track to an album.", annotations=write)
     async def add_track_to_album(track_id: str, album_id: str) -> dict:
         device_id = identity(WRITE_SCOPE)
@@ -226,7 +316,11 @@ def create_mcp() -> FastMCP:
             album["updated_at"] = now_iso(); return album
         return await mutate(device_id, operation)
 
-    @mcp.tool(name="remove_track_from_album", description="Remove a track from an album without deleting the track.", annotations=write)
+    @mcp.tool(
+        name="remove_track_from_album",
+        description="Remove a track from an album (playlist). The track stays in the library and in other albums.",
+        annotations=write,
+    )
     async def remove_track_from_album(track_id: str, album_id: str) -> dict:
         device_id = identity(WRITE_SCOPE)
         def operation(library):

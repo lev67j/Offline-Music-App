@@ -88,6 +88,8 @@ def validate_redirect(uri: str) -> None:
         "https://chatgpt.com/connector_platform_oauth_redirect",
         "https://chatgpt.com/connector/oauth/",
         "https://chat.openai.com/aip/plugin-",
+        "https://claude.ai/api/mcp/auth_callback",
+        "https://claude.com/api/mcp/auth_callback",
         "http://localhost:",
         "http://127.0.0.1:",
         "http://test/",

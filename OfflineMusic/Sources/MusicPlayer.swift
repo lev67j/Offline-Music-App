@@ -27,6 +27,8 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var contextPlaylistID: UUID?
     /// Search results the user tapped in, in the order they were shown.
     private var contextResults: [UUID]?
+    /// True when tags are selected: only the visible tracks play.
+    private var contextOnlyVisible = false
     /// Tracks played since the user last started playback; each plays once
     /// per pass unless repeat is on.
     private var playedTrackIDs: Set<UUID> = []
@@ -71,8 +73,8 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     /// Plays the selected playlist from the top, or in shuffle order.
     /// `visibleTrackIDs` are the search results when a search is active.
-    func playSelectedPlaylist(visibleTrackIDs: [UUID]? = nil) {
-        startContext(visibleTrackIDs: visibleTrackIDs)
+    func playSelectedPlaylist(visibleTrackIDs: [UUID]? = nil, onlyVisible: Bool = false) {
+        startContext(visibleTrackIDs: visibleTrackIDs, onlyVisible: onlyVisible)
         let order = isShuffleEnabled ? shuffledQueue(excluding: nil) : linearOrder
         guard let first = order.first else { return }
         play(trackID: first, queue: Array(order.dropFirst()))
@@ -81,8 +83,8 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
     /// Plays a tapped track. Without shuffle the queue follows the list the
     /// user sees: the search results top to bottom, then the playlist after
     /// the last result.
-    func playTrackFromSelectedPlaylist(_ trackID: UUID, visibleTrackIDs: [UUID]? = nil) {
-        startContext(visibleTrackIDs: visibleTrackIDs)
+    func playTrackFromSelectedPlaylist(_ trackID: UUID, visibleTrackIDs: [UUID]? = nil, onlyVisible: Bool = false) {
+        startContext(visibleTrackIDs: visibleTrackIDs, onlyVisible: onlyVisible)
         play(trackID: trackID, queue: upcomingTrackIDs(after: trackID))
     }
 
@@ -179,13 +181,14 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     private var linearOrder: [UUID] {
-        PlaybackOrder.linear(playlist: contextTrackIDs, visible: contextResults)
+        PlaybackOrder.linear(playlist: contextTrackIDs, visible: contextResults, onlyVisible: contextOnlyVisible)
     }
 
-    private func startContext(visibleTrackIDs: [UUID]?) {
+    private func startContext(visibleTrackIDs: [UUID]?, onlyVisible: Bool) {
         contextPlaylistID = library.selectedPlaylist?.id
         let playlist = library.selectedTracks.map(\.id)
         contextResults = visibleTrackIDs == playlist ? nil : visibleTrackIDs
+        contextOnlyVisible = onlyVisible && contextResults != nil
         playedTrackIDs.removeAll()
         playbackHistory.removeAll()
     }
@@ -209,8 +212,12 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
         let resultSet = Set(results)
         let first = PlaybackOrder.shuffled(
-            all.filter { resultSet.contains($0) }, playedInRound: [], artist: artist, using: &generator
+            all.filter { resultSet.contains($0) },
+            playedInRound: contextOnlyVisible ? round : [],
+            artist: artist,
+            using: &generator
         )
+        if contextOnlyVisible { return first }
         let rest = PlaybackOrder.shuffled(
             all.filter { !resultSet.contains($0) }, playedInRound: round, artist: artist, using: &generator
         )
@@ -344,6 +351,7 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
         var repeatMode: RepeatMode
         var contextPlaylistID: UUID?
         var contextResults: [UUID]?
+        var contextOnlyVisible: Bool?
         var playedTrackIDs: [UUID]
         var shuffleRounds: [UUID: [UUID]]
     }
@@ -365,6 +373,7 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
         repeatMode = state.repeatMode
         contextPlaylistID = state.contextPlaylistID
         contextResults = state.contextResults
+        contextOnlyVisible = state.contextOnlyVisible ?? false
         playedTrackIDs = Set(state.playedTrackIDs)
         shuffleRounds = state.shuffleRounds.mapValues(Set.init)
         if let trackID = state.currentTrackID, library.track(id: trackID) != nil {
@@ -382,6 +391,7 @@ final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
             repeatMode: repeatMode,
             contextPlaylistID: contextPlaylistID,
             contextResults: contextResults,
+            contextOnlyVisible: contextOnlyVisible,
             playedTrackIDs: Array(playedTrackIDs),
             shuffleRounds: shuffleRounds.mapValues(Array.init)
         )

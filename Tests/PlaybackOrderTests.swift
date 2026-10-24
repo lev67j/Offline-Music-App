@@ -34,6 +34,13 @@ final class PlaybackOrderTests: XCTestCase {
         XCTAssertEqual(PlaybackOrder.after(playlist[19], in: order), [])
     }
 
+    func testSelectedTagsPlayOnlyTheirTracks() {
+        let tagged = [playlist[3], playlist[8], playlist[15]]
+        let order = PlaybackOrder.linear(playlist: playlist, visible: tagged, onlyVisible: true)
+        XCTAssertEqual(order, tagged)
+        XCTAssertEqual(PlaybackOrder.after(playlist[8], in: order), [playlist[15]])
+    }
+
     // MARK: Shuffle
 
     func testShuffleContainsEveryTrackOnce() {

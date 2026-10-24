@@ -126,6 +126,29 @@ async def protected_resource_metadata() -> dict:
     }
 
 
+@router.post("/oauth/register", status_code=201)
+async def register_client(body: dict) -> dict:
+    """Dynamic client registration (RFC 7591) for MCP clients such as Claude.
+
+    Clients are public (PKCE, no secret); access is still granted only with a
+    one-time code from the app, so registration itself grants nothing.
+    """
+    redirect_uris = body.get("redirect_uris") or []
+    if not isinstance(redirect_uris, list) or not redirect_uris:
+        raise HTTPException(400, "redirect_uris is required")
+    from .auth import validate_redirect
+    for uri in redirect_uris:
+        validate_redirect(str(uri))
+    return {
+        "client_id": f"mcp-client-{secrets.token_urlsafe(12)}",
+        "client_name": str(body.get("client_name") or "MCP client")[:100],
+        "redirect_uris": redirect_uris,
+        "grant_types": ["authorization_code", "refresh_token"],
+        "response_types": ["code"],
+        "token_endpoint_auth_method": "none",
+    }
+
+
 @router.get("/.well-known/oauth-authorization-server")
 async def authorization_server_metadata() -> dict:
     base = public_base_url()
@@ -133,6 +156,7 @@ async def authorization_server_metadata() -> dict:
         "issuer": base,
         "authorization_endpoint": f"{base}/oauth/authorize",
         "token_endpoint": f"{base}/oauth/token",
+        "registration_endpoint": f"{base}/oauth/register",
         "client_id_metadata_document_supported": True,
         "token_endpoint_auth_methods_supported": ["none"],
         "code_challenge_methods_supported": ["S256"],

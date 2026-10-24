@@ -43,7 +43,7 @@ struct MCPSettingsView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Section("ChatGPT / MCP") {
+                Section("ChatGPT, Claude / MCP") {
                     LabeledContent("Status") {
                         Text(library.syncStatus)
                             .foregroundStyle(library.syncStatus == "Connected" ? .green : .secondary)
@@ -84,11 +84,11 @@ struct MCPSettingsView: View {
                             .frame(maxWidth: .infinity)
                             .textSelection(.enabled)
 
-                        Text("Enter this code on the authorization page that ChatGPT opens. It works once and expires in 10 minutes.")
+                        Text("Enter this code on the authorization page that ChatGPT or Claude opens. It works once and expires in 10 minutes.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("Copy the URL into ChatGPT first, then generate a code here when ChatGPT asks you to connect.")
+                        Text("Add the URL to ChatGPT or Claude first, then generate a code here when it asks you to connect.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -97,6 +97,8 @@ struct MCPSettingsView: View {
                 Section("Access") {
                     Label("Create and edit albums", systemImage: "checkmark.circle.fill")
                     Label("Add, edit and delete tracks", systemImage: "checkmark.circle.fill")
+                    Label("Remove tracks from albums", systemImage: "checkmark.circle.fill")
+                    Label("Tag tracks", systemImage: "checkmark.circle.fill")
                     Label("Set covers and lyrics", systemImage: "checkmark.circle.fill")
                     Label("Album deletion is blocked", systemImage: "lock.fill")
                         .foregroundStyle(.secondary)
@@ -110,7 +112,7 @@ struct MCPSettingsView: View {
                         ForEach(library.mcpConnections.filter { $0.revokedAt == nil }) { connection in
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("ChatGPT")
+                                    Text(connection.appName)
                                     Text(connection.lastUsedAt?.formatted() ?? connection.createdAt.formatted())
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
@@ -150,5 +152,14 @@ struct MCPSettingsView: View {
                 LibraryFolderExportPicker(folderURL: exportFolderURL)
             }
         }
+    }
+}
+
+private extension MCPConnection {
+    var appName: String {
+        let id = clientID.lowercased()
+        if id.contains("chatgpt") || id.contains("openai") { return "ChatGPT" }
+        if id.contains("claude") || id.hasPrefix("mcp-client-") { return "Claude" }
+        return "MCP app"
     }
 }

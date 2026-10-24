@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var didRecordFirstFrame = false
     @State private var albumAccentColor = ArtworkPalette.fallbackAccent
     @State private var trackSearchText = ""
+    /// Tag keys picked in the tag bar; only tracks with one of them are shown.
+    @State private var selectedTagKeys: Set<String> = []
     @FocusState private var isTrackSearchFocused: Bool
 
     var body: some View {
@@ -140,6 +142,7 @@ struct ContentView: View {
             .scrollDismissesKeyboard(.interactively)
             .onChange(of: library.selectedPlaylistID) { _, _ in
                 trackSearchText = ""
+                selectedTagKeys = []
                 isTrackSearchFocused = false
             }
 
@@ -315,7 +318,7 @@ struct ContentView: View {
 
             HStack(spacing: 16) {
                 Button {
-                    player.playSelectedPlaylist(visibleTrackIDs: visibleTrackIDs)
+                    player.playSelectedPlaylist(visibleTrackIDs: visibleTrackIDs, onlyVisible: !selectedTagKeys.isEmpty)
                 } label: {
                     Label("Play", systemImage: "play.fill")
                         .mainActionButton()
@@ -344,41 +347,60 @@ struct ContentView: View {
         return "\(count)  •  \(duration.formattedPlaylistDuration)"
     }
 
-    /// Track IDs exactly as listed while searching; `nil` without a search.
+    /// Track IDs exactly as listed while searching or filtering by tags;
+    /// `nil` when the whole playlist is shown.
     private var visibleTrackIDs: [UUID]? {
-        isSearchingTracks ? filteredTracks.map(\.id) : nil
+        isFilteringTracks ? filteredTracks.map(\.id) : nil
+    }
+
+    private var isFilteringTracks: Bool {
+        isSearchingTracks || !selectedTagKeys.isEmpty
     }
 
     private var isSearchingTracks: Bool {
         !trackSearchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// Tracks of the selected playlist matching the search query.
-    /// Every word of the query must appear in the title, artist or album;
-    /// matching ignores case and diacritics (so "e" also finds "é"/"ё").
+    /// Tracks of the selected playlist with one of the selected tags that
+    /// match the search query. Every word of the query must appear in the
+    /// title, artist, album or tags; matching ignores case and diacritics
+    /// (so "e" also finds "é"/"ё").
     private var filteredTracks: [Track] {
-        let tracks = library.selectedTracks
+        var tracks = library.selectedTracks
+        if !selectedTagKeys.isEmpty {
+            tracks = tracks.filter { track in
+                track.tagList.contains { selectedTagKeys.contains(TrackTag.key($0)) }
+            }
+        }
         let tokens = trackSearchText
             .searchNormalized
             .split(whereSeparator: \.isWhitespace)
         guard !tokens.isEmpty else { return tracks }
 
         return tracks.filter { track in
-            let haystack = "\(track.title) \(track.artist) \(track.album)".searchNormalized
+            let haystack = ([track.title, track.artist, track.album] + track.tagList)
+                .joined(separator: " ")
+                .searchNormalized
             return tokens.allSatisfy { haystack.contains($0) }
         }
     }
 
     private var trackSection: some View {
         let tracks = filteredTracks
-        let isSearching = isSearchingTracks
+        let isSearching = isFilteringTracks
+        let playlistTags = library.tags(inPlaylist: library.selectedPlaylist?.id)
 
         return VStack(spacing: 0) {
+            if !playlistTags.isEmpty {
+                TagFilterBar(tags: playlistTags, selection: $selectedTagKeys)
+                    .padding(.bottom, 14)
+            }
+
             if !library.selectedTracks.isEmpty {
                 TrackSearchField(
                     text: $trackSearchText,
                     isFocused: $isTrackSearchFocused,
-                    resultCount: isSearching ? tracks.count : nil
+                    resultCount: isSearchingTracks ? tracks.count : nil
                 )
                 .padding(.bottom, 16)
             }
@@ -454,7 +476,9 @@ struct ContentView: View {
                     Text("No Results")
                         .font(.title3.weight(.semibold))
 
-                    Text("Nothing in this playlist matches \u{201c}\(trackSearchText.trimmingCharacters(in: .whitespacesAndNewlines))\u{201d}.")
+                    Text(isSearchingTracks
+                         ? "Nothing in this playlist matches \u{201c}\(trackSearchText.trimmingCharacters(in: .whitespacesAndNewlines))\u{201d}."
+                         : "No tracks in this playlist have these tags.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -467,14 +491,69 @@ struct ContentView: View {
             } else {
                 LazyVStack(spacing: 2) {
                     let visible = isSearching ? tracks.map(\.id) : nil
+                    let onlyVisible = !selectedTagKeys.isEmpty
                     ForEach(tracks) { track in
-                        TrackRow(track: track, visibleTrackIDs: visible)
+                        TrackRow(track: track, visibleTrackIDs: visible, onlyVisible: onlyVisible)
                             .environmentObject(library)
                             .environmentObject(player)
                     }
                 }
             }
         }
+    }
+}
+
+/// Horizontal row of tag chips. Several can be picked; the list then shows
+/// tracks that carry any of them.
+private struct TagFilterBar: View {
+    let tags: [String]
+    @Binding var selection: Set<String>
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                if !selection.isEmpty {
+                    Button {
+                        withAnimation(.smooth(duration: 0.2)) { selection.removeAll() }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.bold))
+                            .frame(width: 34, height: 34)
+                            .background(.white.opacity(0.1), in: Circle())
+                            .overlay { Circle().stroke(.white.opacity(0.14), lineWidth: 1) }
+                    }
+                    .accessibilityLabel("Clear tags")
+                    .transition(.scale.combined(with: .opacity))
+                }
+
+                ForEach(tags, id: \.self) { tag in
+                    let key = TrackTag.key(tag)
+                    let isOn = selection.contains(key)
+                    Button {
+                        withAnimation(.smooth(duration: 0.2)) {
+                            if isOn { selection.remove(key) } else { selection.insert(key) }
+                        }
+                    } label: {
+                        Text("#\(tag)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(isOn ? .black : .white.opacity(0.86))
+                            .padding(.horizontal, 14)
+                            .frame(height: 34)
+                            .background(isOn ? Color.accentColor : Color.white.opacity(0.1), in: Capsule())
+                            .overlay {
+                                Capsule().stroke(isOn ? Color.clear : .white.opacity(0.14), lineWidth: 1)
+                            }
+                    }
+                    .accessibilityLabel("Tag \(tag)")
+                    .accessibilityValue(isOn ? "Selected" : "")
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
+                }
+            }
+            .padding(.horizontal, 22)
+            .buttonStyle(.plain)
+        }
+        .scrollIndicators(.hidden)
+        .padding(.horizontal, -22)
     }
 }
 
@@ -570,11 +649,13 @@ private struct TrackRow: View {
     let track: Track
     /// The search results this row belongs to, so playback follows them.
     var visibleTrackIDs: [UUID]?
+    /// Tags are selected: playback stays inside the visible tracks.
+    var onlyVisible = false
 
     var body: some View {
         HStack(spacing: 0) {
             Button {
-                player.playTrackFromSelectedPlaylist(track.id, visibleTrackIDs: visibleTrackIDs)
+                player.playTrackFromSelectedPlaylist(track.id, visibleTrackIDs: visibleTrackIDs, onlyVisible: onlyVisible)
             } label: {
                 HStack(spacing: 14) {
                     ArtworkView(
@@ -915,6 +996,9 @@ private struct NowPlayingArtworkView: View {
                         }
                         .padding(.top, 24)
 
+                        TrackTagsRow(track: track)
+                            .padding(.top, 12)
+
                         if player.currentTrackID == track.id {
                             PlaybackScrubber()
                                 .padding(.top, 24)
@@ -1069,6 +1153,110 @@ private struct NowPlayingArtworkView: View {
             )
         }
         .ignoresSafeArea()
+    }
+}
+
+/// Small tags under the title in the track view, with a little plus to add
+/// one. Long-press a tag to remove it.
+private struct TrackTagsRow: View {
+    @EnvironmentObject private var library: LibraryStore
+
+    let track: Track
+    @State private var isNamingTag = false
+    @State private var newTag = ""
+
+    var body: some View {
+        let suggestions = library.allTags.filter { !track.hasTag($0) }
+
+        FlowLayout(spacing: 6) {
+            ForEach(track.tagList, id: \.self) { tag in
+                Text("#\(tag)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.82))
+                    .padding(.horizontal, 9)
+                    .frame(height: 24)
+                    .background(.white.opacity(0.12), in: Capsule())
+                    .contextMenu {
+                        Button("Remove Tag", systemImage: "minus.circle", role: .destructive) {
+                            library.removeTag(tag, from: track.id)
+                        }
+                    }
+                    .accessibilityLabel("Tag \(tag)")
+                    .accessibilityAction(named: "Remove") { library.removeTag(tag, from: track.id) }
+            }
+
+            Menu {
+                Button("New Tag…", systemImage: "plus") {
+                    newTag = ""
+                    isNamingTag = true
+                }
+                if !suggestions.isEmpty {
+                    Divider()
+                    ForEach(suggestions, id: \.self) { tag in
+                        Button("#\(tag)") { library.addTag(tag, to: track.id) }
+                    }
+                }
+            } label: {
+                Image(systemName: "plus")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .frame(width: 24, height: 24)
+                    .background(.white.opacity(0.08), in: Circle())
+                    .overlay { Circle().stroke(.white.opacity(0.16), lineWidth: 1) }
+            }
+            .accessibilityLabel("Add tag")
+        }
+        .frame(maxWidth: .infinity)
+        .alert("New Tag", isPresented: $isNamingTag) {
+            TextField("Tag", text: $newTag)
+                .textInputAutocapitalization(.never)
+            Button("Cancel", role: .cancel) {}
+            Button("Add") { library.addTag(newTag, to: track.id) }
+        } message: {
+            Text("For example: gym, calm, road.")
+        }
+    }
+}
+
+/// Lays children out in centered rows, wrapping like text.
+private struct FlowLayout: Layout {
+    var spacing: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = arrange(subviews, width: proposal.width ?? .infinity)
+        let height = rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0))
+        let width = rows.map(\.width).max() ?? 0
+        return CGSize(width: proposal.width ?? width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in arrange(subviews, width: bounds.width) {
+            var x = bounds.midX - row.width / 2
+            for index in row.indices {
+                let size = subviews[index].sizeThatFits(.unspecified)
+                subviews[index].place(at: CGPoint(x: x, y: y + (row.height - size.height) / 2), proposal: .unspecified)
+                x += size.width + spacing
+            }
+            y += row.height + spacing
+        }
+    }
+
+    private func arrange(_ subviews: Subviews, width: CGFloat) -> [(indices: [Int], width: CGFloat, height: CGFloat)] {
+        var rows: [(indices: [Int], width: CGFloat, height: CGFloat)] = []
+        var current: (indices: [Int], width: CGFloat, height: CGFloat) = ([], 0, 0)
+        for index in subviews.indices {
+            let size = subviews[index].sizeThatFits(.unspecified)
+            let added = current.indices.isEmpty ? size.width : current.width + spacing + size.width
+            if added > width, !current.indices.isEmpty {
+                rows.append(current)
+                current = ([index], size.width, size.height)
+            } else {
+                current = (current.indices + [index], added, max(current.height, size.height))
+            }
+        }
+        if !current.indices.isEmpty { rows.append(current) }
+        return rows
     }
 }
 
