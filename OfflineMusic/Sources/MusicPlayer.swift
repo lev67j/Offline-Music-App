@@ -4,10 +4,12 @@ import MediaPlayer
 import UIKit
 
 @MainActor
-final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlayerDelegate {
+final class MusicPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var currentTrackID: UUID?
     @Published var isPlaying = false
-    @Published var repeatMode: RepeatMode = .off
+    @Published var repeatMode: RepeatMode = .off {
+        didSet { savePlaybackState() }
+    }
     @Published private(set) var isShuffleEnabled = false
 
     private let library: LibraryStore
@@ -17,9 +19,23 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
     private var player: AVAudioPlayer?
     private var shouldResumeAfterInterruption = false
     private var isPlaybackConfigured = false
-    private var playedTrackIDs: Set<UUID> = []
     private var playbackHistory: [UUID] = []
     private var isNavigatingHistory = false
+
+    /// Playlist the current queue was built from. It stays the same when the
+    /// user browses another playlist while music plays.
+    private var contextPlaylistID: UUID?
+    /// Search results the user tapped in, in the order they were shown.
+    private var contextResults: [UUID]?
+    /// Tracks played since the user last started playback; each plays once
+    /// per pass unless repeat is on.
+    private var playedTrackIDs: Set<UUID> = []
+    /// Per playlist: tracks already heard in the current shuffle round. Kept
+    /// across launches so shuffle offers every track before repeating any.
+    private var shuffleRounds: [UUID: Set<UUID>] = [:]
+    /// Where the restored track stopped, applied when playback resumes.
+    private var restoredPosition: TimeInterval?
+    private var didRestoreState = false
 
     init(library: LibraryStore) {
         self.library = library
@@ -37,7 +53,7 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
     }
 
     var playbackPosition: TimeInterval {
-        player?.currentTime ?? 0
+        player?.currentTime ?? restoredPosition ?? 0
     }
 
     var playbackDuration: TimeInterval {
@@ -45,28 +61,29 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
     }
 
     func seek(to time: TimeInterval) {
-        guard let player else { return }
+        guard let player else {
+            restoredPosition = max(time, 0)
+            return
+        }
         player.currentTime = min(max(time, 0), player.duration)
         updateNowPlayingInfo()
     }
 
-    func playSelectedPlaylist() {
-        var tracks = library.selectedTracks
-        if isShuffleEnabled {
-            tracks.shuffle()
-        }
-
-        guard let firstTrack = tracks.first else { return }
-        playedTrackIDs.removeAll()
-        playbackHistory.removeAll()
-        play(trackID: firstTrack.id, queue: Array(tracks.dropFirst()).map(\.id))
+    /// Plays the selected playlist from the top, or in shuffle order.
+    /// `visibleTrackIDs` are the search results when a search is active.
+    func playSelectedPlaylist(visibleTrackIDs: [UUID]? = nil) {
+        startContext(visibleTrackIDs: visibleTrackIDs)
+        let order = isShuffleEnabled ? shuffledQueue(excluding: nil) : linearOrder
+        guard let first = order.first else { return }
+        play(trackID: first, queue: Array(order.dropFirst()))
     }
 
-    func playTrackFromSelectedPlaylist(_ trackID: UUID) {
-        playedTrackIDs.removeAll()
-        playbackHistory.removeAll()
-        let queue = upcomingTrackIDs(afterSelecting: trackID)
-        play(trackID: trackID, queue: queue)
+    /// Plays a tapped track. Without shuffle the queue follows the list the
+    /// user sees: the search results top to bottom, then the playlist after
+    /// the last result.
+    func playTrackFromSelectedPlaylist(_ trackID: UUID, visibleTrackIDs: [UUID]? = nil) {
+        startContext(visibleTrackIDs: visibleTrackIDs)
+        play(trackID: trackID, queue: upcomingTrackIDs(after: trackID))
     }
 
     func playQueueEntry(_ entryID: UUID) {
@@ -83,22 +100,19 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
 
     func toggleShuffle() {
         isShuffleEnabled.toggle()
+        defer { savePlaybackState() }
 
-        guard let currentTrackID,
-              library.selectedTracks.contains(where: { $0.id == currentTrackID })
-        else { return }
+        guard let currentTrackID, contextTrackIDs.contains(currentTrackID) else { return }
 
         playedTrackIDs = [currentTrackID]
         playbackHistory.removeAll()
-        library.replaceQueue(with: upcomingTrackIDs(afterSelecting: currentTrackID))
+        library.replaceQueue(with: upcomingTrackIDs(after: currentTrackID))
     }
 
     func togglePlayPause() {
         if let player {
             if player.isPlaying {
-                player.pause()
-                isPlaying = false
-                updateNowPlayingInfo()
+                pausePlayback()
             } else {
                 activateAudioSession()
                 if player.play() {
@@ -106,8 +120,8 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
                     updateNowPlayingInfo()
                 }
             }
-        } else if let currentTrackID {
-            play(trackID: currentTrackID, queue: library.queue.map(\.trackID))
+        } else if currentTrackID != nil {
+            resumeRestoredTrack()
         } else {
             playSelectedPlaylist()
         }
@@ -126,17 +140,17 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
             return
         }
 
+        let order = linearOrder
         guard let currentTrackID,
-              let index = library.selectedTracks.firstIndex(where: { $0.id == currentTrackID }),
+              let index = order.firstIndex(of: currentTrackID),
               index > 0
         else {
             player?.currentTime = 0
             return
         }
 
-        let previousID = library.selectedTracks[index - 1].id
-        let queue = library.queueTrackIDs(after: previousID)
-        play(trackID: previousID, queue: queue)
+        let previousID = order[index - 1]
+        play(trackID: previousID, queue: PlaybackOrder.after(previousID, in: order))
     }
 
     func nextTrack() {
@@ -151,10 +165,70 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
         updateNowPlayingInfo()
     }
 
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         DispatchQueue.main.async { [weak self] in
             self?.handleTrackFinished()
         }
+    }
+
+    // MARK: - Queue
+
+    private var contextTrackIDs: [UUID] {
+        guard let playlistID = contextPlaylistID ?? library.selectedPlaylist?.id else { return [] }
+        return library.trackIDs(inPlaylist: playlistID)
+    }
+
+    private var linearOrder: [UUID] {
+        PlaybackOrder.linear(playlist: contextTrackIDs, visible: contextResults)
+    }
+
+    private func startContext(visibleTrackIDs: [UUID]?) {
+        contextPlaylistID = library.selectedPlaylist?.id
+        let playlist = library.selectedTracks.map(\.id)
+        contextResults = visibleTrackIDs == playlist ? nil : visibleTrackIDs
+        playedTrackIDs.removeAll()
+        playbackHistory.removeAll()
+    }
+
+    private func upcomingTrackIDs(after trackID: UUID) -> [UUID] {
+        isShuffleEnabled
+            ? shuffledQueue(excluding: trackID)
+            : PlaybackOrder.after(trackID, in: linearOrder)
+    }
+
+    /// Shuffled order of the context. Search results come first, then the
+    /// rest of the playlist; tracks not heard in this shuffle round lead.
+    private func shuffledQueue(excluding trackID: UUID?) -> [UUID] {
+        var generator = SystemRandomNumberGenerator()
+        let artist: (UUID) -> String = { [library] in library.track(id: $0)?.artist ?? "" }
+        let round = contextPlaylistID.flatMap { shuffleRounds[$0] } ?? []
+        let all = contextTrackIDs.filter { $0 != trackID }
+
+        guard let results = contextResults else {
+            return PlaybackOrder.shuffled(all, playedInRound: round, artist: artist, using: &generator)
+        }
+        let resultSet = Set(results)
+        let first = PlaybackOrder.shuffled(
+            all.filter { resultSet.contains($0) }, playedInRound: [], artist: artist, using: &generator
+        )
+        let rest = PlaybackOrder.shuffled(
+            all.filter { !resultSet.contains($0) }, playedInRound: round, artist: artist, using: &generator
+        )
+        return first + rest
+    }
+
+    private func markPlayedInShuffleRound(_ trackID: UUID) {
+        guard let playlistID = contextPlaylistID else { return }
+        let playlist = Set(contextTrackIDs)
+        guard playlist.contains(trackID) else { return }
+
+        var round = (shuffleRounds[playlistID] ?? []).intersection(playlist)
+        round.insert(trackID)
+        if playlist.isSubset(of: round) {
+            // Everyone has been heard: the next round starts from scratch.
+            round = []
+        }
+        shuffleRounds[playlistID] = round
     }
 
     private func play(trackID: UUID, queue: [UUID]? = nil) {
@@ -169,6 +243,7 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
             activateAudioSession()
             player?.stop()
             player = newPlayer
+            restoredPosition = nil
             guard newPlayer.play() else {
                 isPlaying = false
                 updateNowPlayingInfo()
@@ -181,13 +256,26 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
             }
             currentTrackID = trackID
             playedTrackIDs.insert(trackID)
+            markPlayedInShuffleRound(trackID)
             isPlaying = true
             if let queue {
                 library.replaceQueue(with: queue)
             }
             updateNowPlayingInfo()
+            savePlaybackState()
         } catch {
             isPlaying = false
+            updateNowPlayingInfo()
+        }
+    }
+
+    /// Continues the track that was playing when the app was last closed.
+    private func resumeRestoredTrack() {
+        guard let currentTrackID else { return }
+        let position = restoredPosition
+        play(trackID: currentTrackID, queue: library.queue.map(\.trackID))
+        if let position, position > 1, let player, position < player.duration - 1 {
+            player.currentTime = position
             updateNowPlayingInfo()
         }
     }
@@ -210,20 +298,21 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
             return
         }
 
-        let playlistTrackIDs = library.selectedTracks.map(\.id)
-        guard !playlistTrackIDs.isEmpty else {
+        let contextIDs = contextTrackIDs
+        guard !contextIDs.isEmpty else {
             stopPlayback()
             return
         }
 
-        var nextCycle = playlistTrackIDs.filter { !playedTrackIDs.contains($0) }
+        var nextCycle = linearOrder.filter { !playedTrackIDs.contains($0) }
         if nextCycle.isEmpty, repeatMode == .continuous {
             playedTrackIDs.removeAll()
-            nextCycle = playlistTrackIDs
+            nextCycle = linearOrder
         }
 
-        if isShuffleEnabled {
-            nextCycle.shuffle()
+        if isShuffleEnabled, !nextCycle.isEmpty {
+            let allowed = Set(nextCycle)
+            nextCycle = shuffledQueue(excluding: nil).filter { allowed.contains($0) }
             avoidImmediateRepeat(in: &nextCycle)
         }
 
@@ -246,14 +335,58 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
         trackIDs.swapAt(0, differentIndex)
     }
 
-    private func upcomingTrackIDs(afterSelecting trackID: UUID) -> [UUID] {
-        guard isShuffleEnabled else {
-            return library.queueTrackIDs(after: trackID)
-        }
+    // MARK: - Saved state
 
-        var trackIDs = library.selectedTracks.map(\.id).filter { $0 != trackID }
-        trackIDs.shuffle()
-        return trackIDs
+    private struct SavedState: Codable {
+        var currentTrackID: UUID?
+        var position: TimeInterval
+        var isShuffleEnabled: Bool
+        var repeatMode: RepeatMode
+        var contextPlaylistID: UUID?
+        var contextResults: [UUID]?
+        var playedTrackIDs: [UUID]
+        var shuffleRounds: [UUID: [UUID]]
+    }
+
+    private var stateURL: URL {
+        library.supportURL.appendingPathComponent("playback.json")
+    }
+
+    /// Restores shuffle, repeat, the last track and the shuffle rounds.
+    /// Call once the library has loaded.
+    func restorePlaybackState() {
+        guard !didRestoreState else { return }
+        didRestoreState = true
+        guard let data = try? Data(contentsOf: stateURL),
+              let state = try? JSONDecoder().decode(SavedState.self, from: data)
+        else { return }
+
+        isShuffleEnabled = state.isShuffleEnabled
+        repeatMode = state.repeatMode
+        contextPlaylistID = state.contextPlaylistID
+        contextResults = state.contextResults
+        playedTrackIDs = Set(state.playedTrackIDs)
+        shuffleRounds = state.shuffleRounds.mapValues(Set.init)
+        if let trackID = state.currentTrackID, library.track(id: trackID) != nil {
+            currentTrackID = trackID
+            restoredPosition = state.position
+        }
+    }
+
+    func savePlaybackState() {
+        guard didRestoreState else { return }
+        let state = SavedState(
+            currentTrackID: currentTrackID,
+            position: player?.currentTime ?? restoredPosition ?? 0,
+            isShuffleEnabled: isShuffleEnabled,
+            repeatMode: repeatMode,
+            contextPlaylistID: contextPlaylistID,
+            contextResults: contextResults,
+            playedTrackIDs: Array(playedTrackIDs),
+            shuffleRounds: shuffleRounds.mapValues(Array.init)
+        )
+        guard let data = try? JSONEncoder().encode(state) else { return }
+        try? data.write(to: stateURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     }
 
     private func stopPlayback() {
@@ -335,8 +468,8 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
                 isPlaying = true
                 updateNowPlayingInfo()
             }
-        } else if let currentTrackID {
-            play(trackID: currentTrackID, queue: library.queue.map(\.trackID))
+        } else if currentTrackID != nil {
+            resumeRestoredTrack()
         } else {
             playSelectedPlaylist()
         }
@@ -347,6 +480,7 @@ final class MusicPlayer: NSObject, ObservableObject, @preconcurrency AVAudioPlay
         player.pause()
         isPlaying = false
         updateNowPlayingInfo()
+        savePlaybackState()
     }
 
     private func observeAudioSessionInterruptions() {

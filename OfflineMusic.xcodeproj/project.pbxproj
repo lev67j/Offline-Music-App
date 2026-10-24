@@ -9,25 +9,44 @@
 /* Begin PBXBuildFile section */
 		138D298FC225238F9B3319D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19106B6D24C67A9F067D3E3F /* Assets.xcassets */; };
 		15AF43AF8F944F4061DA1861 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14588339BF7DD18FD01AA02B /* LibraryStore.swift */; };
+		2166FAC8D54257EE664B88DE /* PlaybackOrderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7B21955745C7C7604932FC /* PlaybackOrderTests.swift */; };
 		5096FBE7D2910BB53760E95F /* OfflineMusicCloudClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */; };
 		6E8ED5C8772DCE343536AFA6 /* AudioDocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE61C7C5540F06B207B6D2E /* AudioDocumentPicker.swift */; };
+		70BC59B95BA39A6CDFA39F3A /* OfflineMusicUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5115A00C17B1FB8EE490293D /* OfflineMusicUITests.swift */; };
 		846AF236011BC69AEA875AF1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCC47CC661114EB18C3438D /* Models.swift */; };
 		938D7863430C4DBCA9AF52F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AFC7B5F0FD4F520578F965 /* ContentView.swift */; };
 		B16A2836ACFDDDEA56B5BDC6 /* MusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A59C2539B4C51FE2D27807 /* MusicPlayer.swift */; };
 		BCDC74F032254800AD0A342B /* OfflineMusicApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */; };
 		C2C8E709695E174A57EF9044 /* ArtworkPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E54493DBC7C1B3CFAB76B4 /* ArtworkPalette.swift */; };
+		CD16F01F43448A80CB8AD13A /* PlaybackOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FCD76F4EC766AB23F16CD02 /* PlaybackOrder.swift */; };
+		FDF3BA9E09A68FA75603F65D /* PlaybackOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FCD76F4EC766AB23F16CD02 /* PlaybackOrder.swift */; };
 		FFA42202CFDF8FD1D1FF3ABF /* MCPSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F54AF08A3C5897DEFC4F68BC /* MCPSettingsView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		ED2EC7B5C0C810E066DCCF18 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 978EB2CA95784B1E8E370033 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B3C4E02B124108E159B1C886;
+			remoteInfo = OfflineMusic;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		0988AA48F91C52CFE2C54A3F /* OfflineMusic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OfflineMusic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E7B21955745C7C7604932FC /* PlaybackOrderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackOrderTests.swift; sourceTree = "<group>"; };
 		14588339BF7DD18FD01AA02B /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
 		16A59C2539B4C51FE2D27807 /* MusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlayer.swift; sourceTree = "<group>"; };
 		19106B6D24C67A9F067D3E3F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		36E54493DBC7C1B3CFAB76B4 /* ArtworkPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkPalette.swift; sourceTree = "<group>"; };
 		4FCC47CC661114EB18C3438D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		5115A00C17B1FB8EE490293D /* OfflineMusicUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMusicUITests.swift; sourceTree = "<group>"; };
 		5A24FC7946C9D91B0E58D8F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6217D3012F181082F0C0F39D /* OfflineMusicUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = OfflineMusicUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6FCD76F4EC766AB23F16CD02 /* PlaybackOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackOrder.swift; sourceTree = "<group>"; };
 		82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMusicApp.swift; sourceTree = "<group>"; };
+		8C2A4AC55EB8241B5E31433B /* OfflineMusicTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = OfflineMusicTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BDE61C7C5540F06B207B6D2E /* AudioDocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDocumentPicker.swift; sourceTree = "<group>"; };
 		D0AFC7B5F0FD4F520578F965 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMusicCloudClient.swift; sourceTree = "<group>"; };
@@ -48,6 +67,8 @@
 			isa = PBXGroup;
 			children = (
 				0988AA48F91C52CFE2C54A3F /* OfflineMusic.app */,
+				8C2A4AC55EB8241B5E31433B /* OfflineMusicTests.xctest */,
+				6217D3012F181082F0C0F39D /* OfflineMusicUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -56,8 +77,26 @@
 			isa = PBXGroup;
 			children = (
 				10E742BD48623CB1061BBE14 /* OfflineMusic */,
+				A33A53461792057C372C3055 /* Tests */,
+				709AE9952BAD836FEAA5E78E /* UITests */,
 				2AA38B4E82C7A12555ABDB50 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		709AE9952BAD836FEAA5E78E /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				5115A00C17B1FB8EE490293D /* OfflineMusicUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		A33A53461792057C372C3055 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				0E7B21955745C7C7604932FC /* PlaybackOrderTests.swift */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		A74F91C95D6026732EE70A2E /* Resources */ = {
@@ -81,6 +120,7 @@
 				16A59C2539B4C51FE2D27807 /* MusicPlayer.swift */,
 				82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */,
 				D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */,
+				6FCD76F4EC766AB23F16CD02 /* PlaybackOrder.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -88,6 +128,41 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		50F0BD8332234F754D61D74C /* OfflineMusicTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A072FF07D2628E6E24DB432 /* Build configuration list for PBXNativeTarget "OfflineMusicTests" */;
+			buildPhases = (
+				0D317B250FA87023AFB9AF70 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OfflineMusicTests;
+			packageProductDependencies = (
+			);
+			productName = OfflineMusicTests;
+			productReference = 8C2A4AC55EB8241B5E31433B /* OfflineMusicTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		7AC89195368051BB4E4B58E6 /* OfflineMusicUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A2654E6244170211A7018D8 /* Build configuration list for PBXNativeTarget "OfflineMusicUITests" */;
+			buildPhases = (
+				4F204BAAB71B650042DEAE14 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D3D67F5FC5E930313A7523FB /* PBXTargetDependency */,
+			);
+			name = OfflineMusicUITests;
+			packageProductDependencies = (
+			);
+			productName = OfflineMusicUITests;
+			productReference = 6217D3012F181082F0C0F39D /* OfflineMusicUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		B3C4E02B124108E159B1C886 /* OfflineMusic */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 14D0A906B29B5484F20A52E1 /* Build configuration list for PBXNativeTarget "OfflineMusic" */;
@@ -115,6 +190,13 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					7AC89195368051BB4E4B58E6 = {
+						DevelopmentTeam = 227PQ9JKJC;
+						TestTargetID = B3C4E02B124108E159B1C886;
+					};
+					B3C4E02B124108E159B1C886 = {
+						DevelopmentTeam = 227PQ9JKJC;
+					};
 				};
 			};
 			buildConfigurationList = E147B17842BA629C5778D791 /* Build configuration list for PBXProject "OfflineMusic" */;
@@ -132,6 +214,8 @@
 			projectRoot = "";
 			targets = (
 				B3C4E02B124108E159B1C886 /* OfflineMusic */,
+				50F0BD8332234F754D61D74C /* OfflineMusicTests */,
+				7AC89195368051BB4E4B58E6 /* OfflineMusicUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -148,6 +232,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0D317B250FA87023AFB9AF70 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FDF3BA9E09A68FA75603F65D /* PlaybackOrder.swift in Sources */,
+				2166FAC8D54257EE664B88DE /* PlaybackOrderTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F204BAAB71B650042DEAE14 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70BC59B95BA39A6CDFA39F3A /* OfflineMusicUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D545DD5FD433B2B3AC881C21 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -161,26 +262,74 @@
 				B16A2836ACFDDDEA56B5BDC6 /* MusicPlayer.swift in Sources */,
 				BCDC74F032254800AD0A342B /* OfflineMusicApp.swift in Sources */,
 				5096FBE7D2910BB53760E95F /* OfflineMusicCloudClient.swift in Sources */,
+				CD16F01F43448A80CB8AD13A /* PlaybackOrder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		D3D67F5FC5E930313A7523FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B3C4E02B124108E159B1C886 /* OfflineMusic */;
+			targetProxy = ED2EC7B5C0C810E066DCCF18 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		0BCA349C553394452C539AD3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 227PQ9JKJC;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusicUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OfflineMusic;
+			};
+			name = Release;
+		};
+		4CB86596B62E511FDA169756 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 227PQ9JKJC;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusicUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OfflineMusic;
+			};
+			name = Debug;
+		};
 		570E0F6E82EF235F29A12A39 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 227PQ9JKJC;
 				INFOPLIST_FILE = OfflineMusic/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusic;
 				PRODUCT_NAME = "Offline Music";
 				SDKROOT = iphoneos;
@@ -250,20 +399,39 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 227PQ9JKJC;
 				INFOPLIST_FILE = OfflineMusic/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusic;
 				PRODUCT_NAME = "Offline Music";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
+		};
+		ABC12668A2CAD16C092FA674 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusicTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
 		};
 		BCC0B468060C6659E8914ABD /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -328,6 +496,24 @@
 			};
 			name = Debug;
 		};
+		D2B3C8466DB217D6E14A314D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.levvlasov.OfflineMusicTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -336,6 +522,24 @@
 			buildConfigurations = (
 				9DBAC406356958CA69825F0F /* Debug */,
 				570E0F6E82EF235F29A12A39 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1A2654E6244170211A7018D8 /* Build configuration list for PBXNativeTarget "OfflineMusicUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4CB86596B62E511FDA169756 /* Debug */,
+				0BCA349C553394452C539AD3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4A072FF07D2628E6E24DB432 /* Build configuration list for PBXNativeTarget "OfflineMusicTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D2B3C8466DB217D6E14A314D /* Debug */,
+				ABC12668A2CAD16C092FA674 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -35,6 +35,8 @@ struct OfflineMusicApp: App {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active, library.isLibraryReady {
                 Task { await library.syncNow() }
+            } else if phase != .active {
+                player.savePlaybackState()
             }
         }
     }

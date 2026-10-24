@@ -107,6 +107,11 @@ final class LibraryStore: ObservableObject {
         tracksByID[id]
     }
 
+    /// Existing tracks of a playlist, in playlist order.
+    func trackIDs(inPlaylist playlistID: UUID) -> [UUID] {
+        playlists.first { $0.id == playlistID }?.trackIDs.filter { tracksByID[$0] != nil } ?? []
+    }
+
     func audioFileURL(for track: Track) -> URL {
         audioURL.appendingPathComponent(track.audioFileName)
     }
@@ -913,7 +918,17 @@ final class LibraryStore: ObservableObject {
         }
     }
 
+    /// Launch with `-OfflineMusicCloudSyncDisabled YES` (simulator screenshots,
+    /// UI tests) to keep the library entirely local.
+    private var isCloudSyncDisabled: Bool {
+        UserDefaults.standard.bool(forKey: "OfflineMusicCloudSyncDisabled")
+    }
+
     func syncNow() async {
+        guard !isCloudSyncDisabled else {
+            syncStatus = "Offline"
+            return
+        }
         guard isLibraryReady, !isSyncing else { return }
         isSyncing = true
         defer { isSyncing = false }
