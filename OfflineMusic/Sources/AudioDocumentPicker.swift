@@ -57,10 +57,33 @@ struct LibraryFolderImportPicker: UIViewControllerRepresentable {
 
 struct LibraryFolderExportPicker: UIViewControllerRepresentable {
     let folderURL: URL
+    var onFinish: (() -> Void)? = nil
 
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        UIDocumentPickerViewController(forExporting: [folderURL], asCopy: true)
+        let picker = UIDocumentPickerViewController(forExporting: [folderURL], asCopy: true)
+        if onFinish != nil {
+            picker.delegate = context.coordinator
+        }
+        return picker
     }
 
     func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(onFinish: onFinish) }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        private let onFinish: (() -> Void)?
+
+        init(onFinish: (() -> Void)?) {
+            self.onFinish = onFinish
+        }
+
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            onFinish?()
+        }
+
+        func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+            onFinish?()
+        }
+    }
 }

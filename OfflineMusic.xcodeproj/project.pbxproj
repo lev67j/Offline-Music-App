@@ -13,6 +13,7 @@
 		5096FBE7D2910BB53760E95F /* OfflineMusicCloudClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */; };
 		6E8ED5C8772DCE343536AFA6 /* AudioDocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE61C7C5540F06B207B6D2E /* AudioDocumentPicker.swift */; };
 		70BC59B95BA39A6CDFA39F3A /* OfflineMusicUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5115A00C17B1FB8EE490293D /* OfflineMusicUITests.swift */; };
+		8422298FEAC1CC221E8E91EA /* PlaylistExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C860DB652D6F06B828793B7E /* PlaylistExport.swift */; };
 		846AF236011BC69AEA875AF1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCC47CC661114EB18C3438D /* Models.swift */; };
 		938D7863430C4DBCA9AF52F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AFC7B5F0FD4F520578F965 /* ContentView.swift */; };
 		B16A2836ACFDDDEA56B5BDC6 /* MusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A59C2539B4C51FE2D27807 /* MusicPlayer.swift */; };
@@ -48,6 +49,7 @@
 		82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMusicApp.swift; sourceTree = "<group>"; };
 		8C2A4AC55EB8241B5E31433B /* OfflineMusicTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = OfflineMusicTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BDE61C7C5540F06B207B6D2E /* AudioDocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDocumentPicker.swift; sourceTree = "<group>"; };
+		C860DB652D6F06B828793B7E /* PlaylistExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistExport.swift; sourceTree = "<group>"; };
 		D0AFC7B5F0FD4F520578F965 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMusicCloudClient.swift; sourceTree = "<group>"; };
 		F54AF08A3C5897DEFC4F68BC /* MCPSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSettingsView.swift; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 				82486F10F918CA98225AB3C8 /* OfflineMusicApp.swift */,
 				D44025A2F30D76958AA8FE6A /* OfflineMusicCloudClient.swift */,
 				6FCD76F4EC766AB23F16CD02 /* PlaybackOrder.swift */,
+				C860DB652D6F06B828793B7E /* PlaylistExport.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -263,6 +266,7 @@
 				BCDC74F032254800AD0A342B /* OfflineMusicApp.swift in Sources */,
 				5096FBE7D2910BB53760E95F /* OfflineMusicCloudClient.swift in Sources */,
 				CD16F01F43448A80CB8AD13A /* PlaybackOrder.swift in Sources */,
+				8422298FEAC1CC221E8E91EA /* PlaylistExport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

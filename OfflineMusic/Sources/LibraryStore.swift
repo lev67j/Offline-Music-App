@@ -421,6 +421,19 @@ final class LibraryStore: ObservableObject {
         }
     }
 
+    func makePlaylistExportFolder(for selection: Set<UUID>) async throws -> URL {
+        let selected = playlists.filter { selection.contains($0.id) }
+        let tracksByID = tracksByID
+        let audioURL = audioURL
+        let coversURL = coversURL
+
+        return try await Task.detached(priority: .userInitiated) {
+            try PlaylistExport.makeFolder(
+                playlists: selected, tracksByID: tracksByID, audioURL: audioURL, coversURL: coversURL
+            )
+        }.value
+    }
+
     func makeExportFolder() async -> URL? {
         guard isLibraryReady else { return nil }
         transferStatus = "Preparing a complete export…"

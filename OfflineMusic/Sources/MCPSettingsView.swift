@@ -11,6 +11,15 @@ struct MCPSettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("Playlists") {
+                    NavigationLink {
+                        PlaylistExportView()
+                    } label: {
+                        Label("Export playlists", systemImage: "square.and.arrow.up")
+                    }
+                    .disabled(!library.isLibraryReady)
+                }
+
                 Section("Library safety") {
                     Label(library.dataSafetyStatus, systemImage: "checkmark.shield.fill")
                         .foregroundStyle(.green)
@@ -161,5 +170,96 @@ private extension MCPConnection {
         if id.contains("chatgpt") || id.contains("openai") { return "ChatGPT" }
         if id.contains("claude") || id.hasPrefix("mcp-client-") { return "Claude" }
         return "MCP app"
+    }
+}
+
+private struct PlaylistExportView: View {
+    @EnvironmentObject private var library: LibraryStore
+    @State private var selection: Set<UUID> = []
+    @State private var isPreparing = false
+    @State private var exportFolder: URL?
+    @State private var isShowingFiles = false
+    @State private var errorMessage = ""
+    @State private var isShowingError = false
+
+    private var availableSelection: Set<UUID> {
+        selection.intersection(library.playlists.map(\.id))
+    }
+
+    var body: some View {
+        List {
+            if library.playlists.isEmpty {
+                Text("No playlists to export")
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(library.playlists) { playlist in
+                Toggle(isOn: Binding(
+                    get: { selection.contains(playlist.id) },
+                    set: { selected in
+                        if selected {
+                            selection.insert(playlist.id)
+                        } else {
+                            selection.remove(playlist.id)
+                        }
+                    }
+                )) {
+                    VStack(alignment: .leading) {
+                        Text(playlist.name)
+                        Text("\(playlist.trackIDs.count) tracks")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .disabled(isPreparing || isShowingFiles)
+        .scrollContentBackground(.hidden)
+        .background(Color.black)
+        .navigationTitle("Export playlists")
+        .navigationBarBackButtonHidden(isPreparing)
+        .interactiveDismissDisabled(isPreparing)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                if isPreparing {
+                    ProgressView()
+                        .accessibilityLabel("Preparing export")
+                } else {
+                    Button("Export", action: prepareExport)
+                        .disabled(availableSelection.isEmpty || isShowingFiles)
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingFiles, onDismiss: {
+            if let exportFolder {
+                try? FileManager.default.removeItem(at: exportFolder)
+            }
+            exportFolder = nil
+        }) {
+            if let exportFolder {
+                LibraryFolderExportPicker(folderURL: exportFolder) {
+                    isShowingFiles = false
+                }
+            }
+        }
+        .alert("Export failed", isPresented: $isShowingError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage)
+        }
+    }
+
+    private func prepareExport() {
+        let selected = availableSelection
+        isPreparing = true
+        Task {
+            defer { isPreparing = false }
+            do {
+                exportFolder = try await library.makePlaylistExportFolder(for: selected)
+                isShowingFiles = true
+            } catch {
+                errorMessage = error.localizedDescription
+                isShowingError = true
+            }
+        }
     }
 }
